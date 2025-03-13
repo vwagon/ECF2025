@@ -32,14 +32,17 @@ jobs:
           terraform_version: '1.10.4'
 
       - name: Create terraform.tfvars
+        working-directory: terraform
         run: |
           echo "dbpassword = \"${{ secrets.DB_PASSWORD }}\"" > terraform.tfvars
           echo "dbusername = \"${{ secrets.DB_USERNAME }}\"" >> terraform.tfvars
           
       - name: Create EC2 Key Pair
+        working-directory: terraform
         run: echo "${{ secrets.ECF_KEY_PUBLIC }}" > ecfkey.pub
 
       - name: Terraform Init and Apply
+        working-directory: terraform
         run: |
           terraform init
           terraform validate
