@@ -4,7 +4,7 @@ resource "aws_db_instance" "ecf_rds" {
   max_allocated_storage       = 30
   engine                      = "mysql"
   engine_version              = "8.0"
-  identifier                  = "ecfrds"
+  identifier                  = "ecfdb"
   instance_class              = "db.t4g.micro"
   password                    = var.dbpassword
   skip_final_snapshot         = true
