@@ -4,6 +4,5 @@ terraform {
     key            = "terraform/state/terraform.tfstate"
     region         = "eu-west-3"
     encrypt        = true
-    role_arn= "arn:aws:iam::619071338581:role/TerraformRole"
   }
 }
