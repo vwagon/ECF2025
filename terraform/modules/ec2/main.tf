@@ -7,7 +7,7 @@ resource "aws_instance" "ec2_java" {
     tags = {
         Name = "ecf_ec2"
     }
-    user_data = templatefile("${path.module}/../../scripts/dependance_ec2.sh", {})
+    user_data = file("./scripts/dependance_ec2.sh") 
 }
 
 resource "aws_key_pair" "ecfkey" {
