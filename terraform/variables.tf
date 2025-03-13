@@ -1,6 +1,7 @@
 variable "AWS_REGION" {
     default = "eu-west-3"
-    description = "Région de notre instance ec2"
+    type = string
+    description = "Région AWS"
 }
 
 variable "AWS_AMIS" {
