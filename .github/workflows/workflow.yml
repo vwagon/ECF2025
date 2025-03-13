@@ -1,0 +1,104 @@
+name: Unified CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3.1.2
+        with:
+          terraform_version: '1.10.4'
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+
+      - name: Create terraform.tfvars
+        run: |
+          echo "dbpassword = \"${{ secrets.DB_PASSWORD }}\"" > terraform.tfvars
+          echo "dbusername = \"${{ secrets.DB_USERNAME }}\"" >> terraform.tfvars
+          
+      - name: Create EC2 Key Pair
+        run: echo "${{ secrets.ECF_KEY_PUBLIC }}" > ecfkey.pub
+
+      - name: Terraform Init and Apply
+        run: |
+          terraform init
+          terraform validate
+          terraform plan -out=tfplan
+          terraform apply -auto-approve tfplan
+
+  spring-boot:
+    needs: terraform
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Build with Maven
+        run: |
+          cd java-app  # Ajustez selon votre structure
+          mvn clean package -DskipTests
+
+      - name: Deploy to EC2
+        run: |
+          echo "${{ secrets.AWS_SSH_KEY }}" > ecfkey.pem
+          chmod 600 ecfkey.pem
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.EC2_INSTANCE_IP }} >> ~/.ssh/known_hosts
+          
+          scp -i ecfkey.pem java-app/target/*.jar Dockerfile docker-compose.yml ec2-user@${{ secrets.EC2_INSTANCE_IP }}:/home/ec2-user/
+          scp -i ecfkey.pem -r config ec2-user@${{ secrets.EC2_INSTANCE_IP }}:/home/ec2-user/
+          
+          ssh -i ecfkey.pem ec2-user@${{ secrets.EC2_INSTANCE_IP }} "cd /home/ec2-user/ && docker-compose down && docker-compose up -d --build"
+
+  react-native:
+    needs: terraform
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.11.0
+
+      - name: Build React Native
+        run: |
+          cd react-app  # Ajustez selon votre structure
+          npm install
+          npm test -- --no-watch
+          npm install -g expo-cli
+          npx expo export --output-dir dist
+
+      - name: Deploy to S3
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+        
+      - run: aws s3 sync react-app/dist s3://ecfete2025valentinwagon --delete
