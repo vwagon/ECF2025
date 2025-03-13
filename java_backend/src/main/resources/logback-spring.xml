@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    
+    <!-- Définition du format des logs -->
+    <!-- <appender name="LOKI" class="com.github.loki4j.logback.LokiAppender">
+        <url>http://loki:3100/loki/api/v1/push</url>
+        <batchSize>10</batchSize>
+        <batchTimeoutMs>5000</batchTimeoutMs>
+        <staticLabels>
+            <label name="app" value="yourmedia"/>
+            <label name="env" value="production"/>
+        </staticLabels>
+    </appender> -->
+
+    <!-- Console pour debug -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Niveau des logs -->
+    <root level="info">
+        <appender-ref ref="LOKI" />
+        <appender-ref ref="STDOUT" />
+    </root>
+
+</configuration>

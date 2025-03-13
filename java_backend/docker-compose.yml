@@ -1,0 +1,83 @@
+services:
+  app:
+    build: .
+    container_name: hello-world-app
+    ports:
+      - "8080:8080"
+    networks:
+      - spring-net
+    logging:
+      driver: loki
+      options:
+        loki-url: "http://loki:3100/loki/api/v1/push"
+        loki-batch-size: "400"
+        loki-retries: "5"
+        loki-external-labels: "job=spring-boot,container_name={{.Name}}"
+    depends_on:
+      - loki
+
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
+    command: -config.file=/etc/loki/loki-config.yml
+    volumes:
+      - ./config/loki-config.yml:/etc/loki/loki-config.yml
+      - loki-data:/loki
+    ports:
+      - "3100:3100"
+    networks:
+      - spring-net
+  promtail:
+    image: grafana/promtail:latest
+    container_name: promtail
+    volumes:
+      - /var/log:/var/log
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./config/promtail-config.yml:/etc/promtail/config.yml:ro
+    command: -config.file=/etc/promtail/config.yml
+    depends_on:
+      - loki
+    networks:
+      - spring-net
+    restart: unless-stopped 
+
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    ports:
+      - "9090:9090"
+    networks:
+      - spring-net
+    depends_on:
+      - loki
+    restart: unless-stopped  
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-storage:/var/lib/grafana
+    depends_on:
+      - prometheus
+      - loki
+    networks:
+      - spring-net
+    restart: unless-stopped  
+
+volumes:
+  grafana-storage:
+  prometheus-data:
+  prometheus-config:
+  loki-data:
+
+networks:
+  spring-net:
+    driver: bridge
