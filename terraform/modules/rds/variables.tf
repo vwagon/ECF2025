@@ -4,18 +4,16 @@ variable "security_group_id" {
 }
 
 variable "dbpassword" {
-  type        = string
-  description = "Password for the RDS database"
+    type = string
 }
 
 variable "dbusername" {
-  type        = string
-  description = "Username for the RDS database"
+    type = string
 }
 
 variable "vpc_id" {
-  description = "VPC ID"
-  type        = string
+    description = "VPC ID"
+    type = string
 }
 
 variable "subnet_ids" {
