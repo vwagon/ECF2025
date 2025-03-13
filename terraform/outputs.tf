@@ -5,11 +5,11 @@ output "ec2_public_ip" {
 
 output "rds_endpoint" {
   description = "RDS endpoint"
-  value       = module.rds.endpoint
+  value       = module.rds.endpoint.id
   sensitive   = true
 }
 
 output "s3_website_endpoint" {
   description = "S3 website endpoint"
-  value       = module.s3.website_endpoint
+  value       = module.s3.website_endpoint.id
 }
