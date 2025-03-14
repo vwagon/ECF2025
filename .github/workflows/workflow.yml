@@ -2,11 +2,9 @@ name: ECF CI/CD Pipeline
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
-    branches:
-      - main
+    branches: [main]
 
 permissions:
   id-token: write
@@ -27,9 +25,9 @@ jobs:
           audience: sts.amazonaws.com
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3.1.2
+        uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: '1.10.4'
+          terraform_version: 1.10.4
 
       - name: Create terraform.tfvars
         working-directory: terraform
@@ -49,6 +47,20 @@ jobs:
           terraform plan -out=tfplan
           terraform apply -auto-approve tfplan
 
+      - name: Get EC2 IP
+        id: terraform-output
+        working-directory: terraform
+        run: |
+          IP=$(terraform output -raw ec2_instance_ip)
+          echo "$IP" > ec2_ip.txt
+          echo "EC2_IP=$IP" >> $GITHUB_OUTPUT
+
+      - name: Upload IP artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ec2-ip
+          path: terraform/ec2_ip.txt
+
   spring-boot:
     needs: terraform
     runs-on: ubuntu-latest
@@ -60,27 +72,33 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Java
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
-          distribution: 'temurin'
-          java-version: '21'
+          distribution: temurin
+          java-version: 21
+          
+      - name: Download IP artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: ec2-ip
+
+      - name: Set EC2 IP
+        run: echo "EC2_IP=$(cat ec2_ip.txt)" >> $GITHUB_ENV
 
       - name: Build with Maven
-        run: |
-          cd java-app
-          mvn clean package -DskipTests
+        run: mvn clean package -DskipTests
 
       - name: Deploy to EC2
         run: |
-          echo "${{ secrets.ECF_KEY_PUBLIC }}" > ecfkey.pub
-          chmod 600 ecfkey.pub
+          echo "${{ secrets.ECF_KEY_PRIVATE }}" > ecfkey.pem
+          chmod 600 ecfkey.pem
           mkdir -p ~/.ssh
-          ssh-keyscan -H ${{ secrets.EC2_INSTANCE_IP }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H ${{ env.EC2_IP }} >> ~/.ssh/known_hosts
           
-          scp -i ecfkey.pub java-app/target/*.jar Dockerfile docker-compose.yml ec2-user@${{ secrets.EC2_INSTANCE_IP }}:/home/ec2-user/
-          scp -i ecfkey.pub -r config ec2-user@${{ secrets.EC2_INSTANCE_IP }}:/home/ec2-user/
+          scp -i ecfkey.pem target/*.jar Dockerfile docker-compose.yml ec2-user@${{ env.EC2_IP }}:/home/ec2-user/
+          scp -i ecfkey.pem -r config ec2-user@${{ env.EC2_IP }}:/home/ec2-user/
           
-          ssh -i ecfkey.pem ec2-user@${{ secrets.EC2_INSTANCE_IP }} "cd /home/ec2-user/ && docker-compose down && docker-compose up -d --build"
+          ssh -i ecfkey.pem ec2-user@${{ env.EC2_IP }} "docker-compose up -d --build"
 
   react-native:
     needs: terraform
@@ -93,13 +111,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v3
         with:
-          node-version: 22.11.0
+          node-version: 20.x
 
       - name: Build React Native
         run: |
-          cd react-app
           npm install
           npm test -- --no-watch
           npm install -g expo-cli
@@ -113,4 +130,4 @@ jobs:
           audience: sts.amazonaws.com
         
       - name: Deploy to S3
-        run: aws s3 sync react-app/dist s3://ecfete2025valentinwagon --delete
+        run: aws s3 sync dist s3://ecfete2025valentinwagon --delete
