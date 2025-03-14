@@ -52,6 +52,9 @@ jobs:
   spring-boot:
     needs: terraform
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: java_backend
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -69,19 +72,22 @@ jobs:
 
       - name: Deploy to EC2
         run: |
-          echo "${{ secrets.AWS_SSH_KEY }}" > ecfkey.pem
-          chmod 600 ecfkey.pem
+          echo "${{ secrets.ECF_KEY_PUBLIC }}" > ecfkey.pub
+          chmod 600 ecfkey.pub
           mkdir -p ~/.ssh
           ssh-keyscan -H ${{ secrets.EC2_INSTANCE_IP }} >> ~/.ssh/known_hosts
           
-          scp -i ecfkey.pem java-app/target/*.jar Dockerfile docker-compose.yml ec2-user@${{ secrets.EC2_INSTANCE_IP }}:/home/ec2-user/
-          scp -i ecfkey.pem -r config ec2-user@${{ secrets.EC2_INSTANCE_IP }}:/home/ec2-user/
+          scp -i ecfkey.pub java-app/target/*.jar Dockerfile docker-compose.yml ec2-user@${{ secrets.EC2_INSTANCE_IP }}:/home/ec2-user/
+          scp -i ecfkey.pub -r config ec2-user@${{ secrets.EC2_INSTANCE_IP }}:/home/ec2-user/
           
           ssh -i ecfkey.pem ec2-user@${{ secrets.EC2_INSTANCE_IP }} "cd /home/ec2-user/ && docker-compose down && docker-compose up -d --build"
 
   react-native:
     needs: terraform
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: react_frontend
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
