@@ -49,19 +49,20 @@ yarn-error.*
 # Specific to your project
 app-example
 
-### Terraform ###
-**/.terraform/*
-*.tfstate
-*.tfstate.*
-crash.log
-crash.*.log
-*.tfvars
-*.tfvars.json
-override.tf
-override.tf.json
-*_override.tf
-*_override.tf.json
-.terraformrc
-terraform.rc
-.terraform.lock.hcl
+### Terraform ###A
+# Ignorer les fichiers Terraform sensibles
+terraform.tfstate
+terraform.tfstate.*
+.terraform/
 
+# Ignorer les variables sensibles
+terraform.tfvars
+
+# Ignorer les clés SSH privées (sécurité)
+ecfkey
+ecfkey.pub
+
+# Ignorer les fichiers de logs et backups
+*.log
+*.backup
+.DS_Store  # (MacOS)
