@@ -21,9 +21,10 @@ usermod -aG docker ec2-user || { echo "Failed to add ec2-user to docker group"; 
 
 # Install Docker Compose
 echo "Installing Docker Compose..."
-sudo curl -L https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
-sudo chmod +x /usr/local/bin/docker-compose || { echo "Failed to install docker-compose"; exit 1; }
-docker-compose version
+sudo curl -L https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose || { echo "Failed to download docker-compose"; exit 1; }
+sudo chmod +x /usr/local/bin/docker-compose || { echo "Failed to make docker-compose executable"; exit 1; }
+sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose || { echo "Failed to create symlink"; exit 1; }
+sudo docker-compose version || { echo "Failed to verify docker-compose installation"; exit 1; }
 
 # Install Loki Docker driver
 echo "Installing Loki Docker driver..."
