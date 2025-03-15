@@ -82,11 +82,8 @@ jobs:
           distribution: temurin
           java-version: 21
           
-      - name: Download IP artifact
+      - name: Download all workflow run artifacts
         uses: actions/download-artifact@v4
-        with:
-          name: ec2-ip
-          path: .
 
       - name: Set EC2 IP
         run: echo "EC2_IP=$(cat terraform/ec2_ip.txt)" >> $GITHUB_ENV
