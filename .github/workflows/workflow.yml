@@ -61,7 +61,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ec2-ip
-          path: ec2_ip.txt
+          path: terraform/ec2_ip.txt
           retention-days: 1
           if-no-files-found: error
           
@@ -82,11 +82,19 @@ jobs:
           distribution: temurin
           java-version: 21
           
-      - name: Download all workflow run artifacts
+      - name: Download ec2-ip artefact
         uses: actions/download-artifact@v4
+        with:
+          name: ec2-ip
+          path: .
+          
+      - name: Display structure of downloaded files  
+        run: ls -R
 
       - name: Set EC2 IP
-        run: echo "EC2_IP=$(cat terraform/ec2_ip.txt)" >> $GITHUB_ENV
+        run: |
+          echo "EC2_IP=$(cat ec2_ip.txt)" >> $GITHUB_ENV
+          echo "IP address: $EC2_IP"  # Debug
 
       - name: Build with Maven
         run: mvn clean package -DskipTests
