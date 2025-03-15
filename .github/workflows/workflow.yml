@@ -94,7 +94,11 @@ jobs:
       - name: Set EC2 IP
         run: |
           echo "EC2_IP=$(cat $GITHUB_WORKSPACE/java_backend/ec2_ip.txt)" >> $GITHUB_ENV
-          echo "IP address: $EC2_IP"  # Debug
+
+      - name: Verify EC2 IP
+        run: |
+          # DEBUG
+          echo "IP address: ${{ env.EC2_IP }}"
 
       - name: Build with Maven
         run: mvn clean package -DskipTests
