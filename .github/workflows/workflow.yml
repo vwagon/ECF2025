@@ -89,7 +89,7 @@ jobs:
           path: .
 
       - name: Set EC2 IP
-        run: echo "EC2_IP=$(cat ec2_ip.txt)" >> $GITHUB_ENV
+        run: echo "EC2_IP=$(cat terraform/ec2_ip.txt)" >> $GITHUB_ENV
 
       - name: Build with Maven
         run: mvn clean package -DskipTests
