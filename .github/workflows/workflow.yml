@@ -112,7 +112,7 @@ jobs:
           
           scp -i ecfkey.pem target/*.jar Dockerfile docker-compose.yml ec2-user@${{ env.EC2_IP }}:/home/ec2-user/
           scp -i ecfkey.pem -r config ec2-user@${{ env.EC2_IP }}:/home/ec2-user/
-          
+          ssh -i ecfkey.pem ec2-user@${{ env.EC2_IP }} "sudo docker-compose version || echo 'Docker Compose not found'"
           ssh -i ecfkey.pem ec2-user@${{ env.EC2_IP }} "cd /home/ec2-user && sudo /usr/local/bin/docker-compose up -d --build"
 
   react-native:
