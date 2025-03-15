@@ -61,7 +61,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ec2-ip
-          path: ./ec2_ip.txt
+          path: ec2_ip.txt
+          retention-days: 1
+          if-no-files-found: error
+          
 
   spring-boot:
     needs: terraform
@@ -83,6 +86,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: ec2-ip
+          path: .
 
       - name: Set EC2 IP
         run: echo "EC2_IP=$(cat ec2_ip.txt)" >> $GITHUB_ENV
