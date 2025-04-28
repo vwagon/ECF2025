@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
 sudo yum update -y
+sudo yum install fail2ban -y  
 sudo yum install -y java mariadb105 git maven
 sudo yum install -y docker
 sudo docker --version
