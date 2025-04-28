@@ -4,5 +4,5 @@ output "ec2_instance_ip" {
 }
 
 output "sns_arn" {
-  value = aws_sns_topic.example_sns.arn
+  value = aws_sns_topic.billing_alerts.arn
 }
