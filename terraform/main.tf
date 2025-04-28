@@ -27,3 +27,14 @@ module "rds" {
   vpc_id = module.vpc.vpc_id
   subnet_ids = module.vpc.private_subnet_ids 
 }
+
+module "cloudwatch_cost_alarm" {
+  source = "./modules/cloudwatch_cost_alarm"
+  alarm_name = "AWS Cost Alarm"
+  cost_threshold = var.cost_threshold
+  sns_topic_arn = aws_sns_topic.billing_alerts.arn
+}
+
+resource "aws_sns_topic" "billing_alerts" {
+  name = "Alerte usage AWS"
+}
