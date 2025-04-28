@@ -75,7 +75,7 @@ services:
 
   node_exporter:
       image: prom/node-exporter:latest
-      container_name: node_exporter
+      container_name: node-exporter
       ports:
         - "9100:9100"
       volumes:
