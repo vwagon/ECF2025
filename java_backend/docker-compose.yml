@@ -72,6 +72,18 @@ services:
       - spring-net
     restart: unless-stopped  
 
+
+  node_exporter:
+      image: prom/node-exporter:latest
+      container_name: node_exporter
+      ports:
+        - "9100:9100"
+      volumes:
+        - /proc:/host/proc:ro
+        - /sys:/host/sys:ro
+        - /:/rootfs:ro
+      networks:
+        - spring-net
 volumes:
   grafana-storage:
   prometheus-data:
