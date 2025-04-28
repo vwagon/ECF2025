@@ -38,6 +38,20 @@ resource "aws_security_group" "ec2_sg" {
         protocol    = "tcp"
         cidr_blocks = ["0.0.0.0/0"]
     }
+    ingress {
+        description = "Prometheus"
+        from_port   = 9090
+        to_port     = 9090
+        protocol    = "tcp"
+        cidr_blocks = local.admin_ip
+    }
+    ingress {
+        description = "Node-exporter"
+        from_port   = 9100
+        to_port     = 9100
+        protocol    = "tcp"
+        cidr_blocks = local.admin_ip
+    }
 }
 resource "aws_security_group" "rds_sg" {
     name = "rds_sg"
