@@ -32,4 +32,7 @@ module "cloudwatch_cost_alarm" {
   source = "./modules/cloudwatch_cost_alarm"
   alarm_name = "AWS Cost Alarm"
   cost_threshold = var.cost_threshold
+  providers = {
+    aws = aws.us
+  }
 }
