@@ -34,14 +34,3 @@ variable "alarm_actions" {
   type        = list(string)
   default     = []
 }
-
-variable "ok_actions" {
-  description = "Liste des actions à prendre lorsque l'alarme est OK"
-  type        = list(string)
-  default     = []
-}
-
-variable "sns_topic_arn" {
-    description = "The sns topic arn"
-    type = string
-}

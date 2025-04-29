@@ -8,8 +8,3 @@ variable "cost_threshold" {
   description = "Le seuil des coûts en EUR au-delà duquel l'alarme se déclenche"
   type        = number
 }
-
-variable "sns_topic_arn" {
-  description = "ARN du topic SNS à utiliser pour l'alarme"
-  type        = string
-}
