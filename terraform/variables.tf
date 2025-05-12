@@ -29,8 +29,3 @@ variable "cost_threshold" {
   default     = 5
 }
 
-variable "alarm_actions" {
-  description = "Liste des actions à prendre quand l'alarme se déclenche (par exemple, SNS Topic ARN)"
-  type        = list(string)
-  default     = []
-}

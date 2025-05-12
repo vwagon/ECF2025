@@ -1,3 +1,8 @@
+resource "aws_sns_topic" "billing_alerts" {
+  name = "AlerteUsageAWS"
+  provider = aws.us-east-1
+}
+
 module "vpc" {
   source = "./modules/vpc"
 }
@@ -32,7 +37,8 @@ module "cloudwatch_cost_alarm" {
   source = "./modules/cloudwatch_cost_alarm"
   alarm_name = "AWS Cost Alarm"
   cost_threshold = var.cost_threshold
+  sns_topic_arn = aws_sns_topic.billing_alerts.arn
   providers = {
-    aws = aws.us
+    aws.us-east-1 = aws.us-east-1
   }
 }
