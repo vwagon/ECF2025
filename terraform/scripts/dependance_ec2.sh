@@ -15,3 +15,8 @@ sudo chmod +x /usr/local/bin/docker-compose
 sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
 sudo docker-compose version
 sudo docker plugin install grafana/loki-docker-driver:latest --alias loki --grant-all-permissions
+if grep -q "^PermitRootLogin" /etc/ssh/sshd_config; then
+  sed -i 's/^PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config
+else
+  echo "PermitRootLogin no" >> /etc/ssh/sshd_config
+fi
